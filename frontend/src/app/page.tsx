@@ -2,215 +2,213 @@
 import { useEffect, useState } from 'react';
 import HeroSequence from '@/components/HeroSequence';
 import Lenis from '@studio-freight/lenis';
-import { Search, Loader2, Rocket, ShieldCheck, Zap, ArrowRight, Instagram, Twitter, Github, Mail, Skull, Target, Terminal, Activity } from 'lucide-react';
+import { 
+  Loader2, Rocket, ShieldCheck, Zap, 
+  Skull, Target, User, 
+  CheckCircle2, Instagram, Twitter, Github 
+} from 'lucide-react';
+
+const PriceCard = ({ title, price, features }: any) => (
+  <div className="group relative p-8 bg-zinc-900/50 border border-zinc-800 rounded-[2.5rem] hover:border-red-600 transition-all duration-500 overflow-hidden">
+    <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-20 transition-opacity">
+      <Skull size={100} />
+    </div>
+    <h3 className="text-red-600 font-mono text-[10px] tracking-widest uppercase mb-4 font-bold">{title}</h3>
+    <p className="text-4xl font-black italic mb-6 tracking-tighter">{price}</p>
+    <ul className="space-y-3 mb-8">
+      {features.map((f: string, i: number) => (
+        <li key={i} className="flex items-center gap-3 text-zinc-400 text-sm">
+          <CheckCircle2 size={16} className="text-red-600" /> {f}
+        </li>
+      ))}
+    </ul>
+    <a href="#order" className="block text-center py-4 bg-zinc-800 group-hover:bg-red-600 text-white font-black rounded-2xl transition-all uppercase italic text-sm">Pilih Misi</a>
+  </div>
+);
 
 export default function Home() {
-  const [articles, setArticles] = useState([]);
   const [orderId, setOrderId] = useState('');
   const [trackData, setTrackData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    contact: '',
+    package: 'PILIH PAKET MISI',
+    details: ''
+  });
 
   useEffect(() => {
     const lenis = new Lenis();
     function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
     requestAnimationFrame(raf);
-    
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-
-    fetch(`${API_URL}/api/admin/orders`)
-      .then(res => res.json())
-      .then(setArticles)
-      .catch(() => console.log("Backend offline atau data belum ada"));
   }, []);
 
+  // --- 1. RADAR MISI (FIXED) ---
   const handleTrack = async () => {
     if(!orderId) return;
     setLoading(true);
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
     try {
-      const res = await fetch(`${API_URL}/api/track/${orderId}`);
-      if (res.ok) setTrackData(await res.json());
-      else alert("ID MISSION TIDAK DITEMUKAN");
+      const res = await fetch('/api/track', { cache: 'no-store' });
+      const allData = await res.json();
+      const match = allData.find((item: any) => item.order_id === orderId);
+      
+      if (match) {
+        setTrackData(match);
+      } else {
+        alert("ID TIDAK DITEMUKAN!");
+        setTrackData(null);
+      }
+    } catch {
+      alert("RADAR OFFLINE!");
     } finally { setLoading(false); }
+  };
+
+  // --- 2. DEPLOY MISI (FIXED UPLINK) ---
+  const handleDeploy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.package === 'PILIH PAKET MISI') return alert('Pilih Paket Misi!');
+    
+    setLoading(true);
+    const generatedId = `BND-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    try {
+      const res = await fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: generatedId,
+          project_name: `${formData.name.toUpperCase()} - ${formData.package}`,
+          progress: 15,
+          status: 'Active'
+        })
+      });
+
+      if (res.ok) {
+        alert(`AGENT TERDEPLOY! ID: ${generatedId}`);
+      }
+    } catch (err) {
+      console.error("Dashboard link failed.");
+    }
+
+    const whatsappMessage = `*MISI DIKIRIM!*%0A%0A*ID:* ${generatedId}%0A*Nama:* ${formData.name}%0A*Paket:* ${formData.package}%0A*Detail:* ${formData.details}`;
+    window.open(`https://wa.me/6285710821547?text=${whatsappMessage}`, '_blank');
+    setLoading(false);
   };
 
   return (
     <main className="bg-[#050505] text-white font-sans selection:bg-red-600 selection:text-white overflow-x-hidden">
-      
-      {/* 1. HERO SECTION */}
-      <section id="home" className="relative min-h-screen">
-        <HeroSequence />
+      <section id="home" className="relative min-h-[100vh] flex items-center justify-center pt-20">
+        <div className="absolute inset-0 z-0 opacity-40"><HeroSequence /></div>
+        <div className="relative z-10 text-center px-4 w-full">
+          <h1 className="text-6xl md:text-[9rem] font-black italic tracking-tighter leading-[0.85] uppercase mb-8">
+            BANDIT <br className="md:hidden" /> <span className="text-red-600">JOKI.</span>
+          </h1>
+          <p className="max-w-2xl mx-auto text-zinc-400 text-base md:text-xl font-medium mb-12 px-6">
+            Hancurkan batas akademik lu. Kami melakukan eksekusi strategis dengan presisi tinggi.
+          </p>
+          <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
+            <a href="#order" className="w-[80%] md:w-auto bg-red-600 text-white px-10 py-5 rounded-2xl font-black italic uppercase tracking-tighter text-lg shadow-[0_0_30px_rgba(220,38,38,0.3)]">Mulai Misi</a>
+            <a href="#paket" className="w-[80%] md:w-auto bg-zinc-900/50 border border-zinc-800 px-10 py-5 rounded-2xl font-black italic uppercase tracking-tighter text-lg">Lihat Taktik</a>
+          </div>
+        </div>
       </section>
 
-      {/* 2. LIVE STATS */}
-      <section className="relative z-20 -mt-24 px-6">
-        <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { label: "MISSIONS COMPLETED", val: "1.2K+", color: "text-red-600" },
-            { label: "EXTRACTION RATE", val: "100%", color: "text-white" },
-            { label: "OPERATIONAL", val: "24/7", color: "text-red-600" }
-          ].map((s, i) => (
-            <div key={i} className="bg-zinc-900/80 border border-zinc-800/50 p-10 rounded-[2rem] backdrop-blur-2xl hover:border-red-600/30 transition-all group overflow-hidden relative shadow-2xl">
-              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Activity size={100} />
-              </div>
+      <section className="relative z-20 -mt-10 px-6">
+        <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[{ label: "MISI SELESAI", val: "1.2K+", color: "text-red-600" }, { label: "EXTRACTION RATE", val: "100%", color: "text-white" }, { label: "OPERASIONAL", val: "24/7", color: "text-red-600" }].map((s, i) => (
+            <div key={i} className="bg-zinc-900/90 border border-zinc-800/50 p-10 rounded-[3rem] backdrop-blur-3xl hover:border-red-600/30 transition-all">
               <h4 className="text-zinc-600 text-[10px] uppercase tracking-[0.4em] mb-4 font-mono font-bold">{s.label}</h4>
-              <p className={`text-6xl font-black italic tracking-tighter ${s.color}`}>{s.val}</p>
+              <p className={`text-5xl md:text-6xl font-black italic tracking-tighter ${s.color}`}>{s.val}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 3. ABOUT */}
-      <section id="about" className="py-40 px-6">
-        <div className="container mx-auto">
-          <div className="max-w-4xl mb-24">
-            <h2 className="text-red-600 font-mono text-[10px] tracking-[0.8em] uppercase mb-6 flex items-center gap-4 text-balance">
-              <span className="w-12 h-[1px] bg-red-600"></span> // THE BANDIT DOCTRINE
-            </h2>
-            <h3 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85] italic">
-              WE DON'T <span className="text-zinc-800">PLAY.</span> <br/>
-              WE <span className="text-red-600">EXECUTE.</span>
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            <div className="md:col-span-7 bg-zinc-900/30 border border-zinc-800 p-16 rounded-[3rem] group hover:bg-zinc-900/50 transition-all">
-              <ShieldCheck size={50} className="text-red-600 mb-10" />
-              <h4 className="text-4xl font-black uppercase italic mb-6">GHOST PROTOCOL</h4>
-              <p className="text-zinc-500 text-xl leading-relaxed font-medium">Data lu adalah aset rahasia. Begitu misi selesai, semua jejak digital dihapus total. Tanpa sisa, tanpa risiko.</p>
-            </div>
-            <div className="md:col-span-5 bg-red-600 p-16 rounded-[3rem] text-white flex flex-col justify-between group hover:shadow-[0_0_50px_rgba(220,38,38,0.2)] transition-all">
-              <Zap size={60} fill="white" className="animate-bounce" />
-              <h4 className="text-5xl font-black uppercase italic leading-none mt-20">BLITZ <br/>KRIEG</h4>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. TRACKING SYSTEM */}
-      <section className="py-24 px-6 relative">
-        <div className="container mx-auto max-w-5xl">
-          <div className="bg-[#0a0a0a] border border-zinc-800 p-8 md:p-20 rounded-[4rem] shadow-3xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-10 opacity-10 pointer-events-none">
-              <Terminal size={150} />
-            </div>
-            <div className="text-center mb-16 relative z-10">
-               <h2 className="text-5xl font-black mb-4 tracking-tighter uppercase italic">MISSION <span className="text-red-600">RADAR</span></h2>
-               <p className="text-zinc-600 font-mono text-[10px] tracking-widest uppercase">Input tactical ID to scan progress</p>
-            </div>
-            <div className="flex flex-col md:flex-row gap-3 max-w-3xl mx-auto relative z-10">
-              <input 
-                type="text" 
-                placeholder="COMMAND ID (BND-XXXX)" 
-                className="flex-1 bg-black border border-zinc-800 p-6 rounded-3xl outline-none focus:border-red-600 transition-all text-2xl font-mono text-red-600 placeholder:text-zinc-800 shadow-inner"
-                value={orderId} 
-                onChange={(e)=>setOrderId(e.target.value.toUpperCase())} 
-              />
-              <button onClick={handleTrack} className="bg-red-600 hover:bg-white hover:text-black text-white font-black px-12 py-6 rounded-3xl transition-all flex items-center justify-center gap-3 shadow-lg">
-                {loading ? <Loader2 className="animate-spin" /> : <Target size={28} />}
-                <span className="text-xl italic uppercase">SCAN</span>
-              </button>
-            </div>
-
-            {trackData && (
-              <div className="mt-16 p-10 bg-zinc-900/50 border border-red-600/20 rounded-[2.5rem] animate-in fade-in zoom-in duration-500">
-                <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 gap-6">
-                   <div className="text-center md:text-left">
-                      <p className="text-red-600 font-mono text-[10px] tracking-[0.5em] uppercase mb-3">Target Confirmed</p>
-                      <h3 className="text-4xl font-black uppercase italic tracking-tighter">{trackData.project_name}</h3>
-                   </div>
-                   <p className="text-8xl font-black text-red-600 italic drop-shadow-[0_0_30px_rgba(220,38,38,0.4)]">{trackData.progress}%</p>
-                </div>
-                <div className="w-full bg-black h-4 rounded-full overflow-hidden border border-zinc-800 p-1">
-                  <div className="bg-red-600 h-full rounded-full transition-all duration-1000" style={{width: `${trackData.progress}%`}}></div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 5. PORTFOLIO - HEIST ARCHIVES (IMAGE-FREE VERSION) */}
-      <section id="portfolio" className="py-40 px-6 bg-[#030303]">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8 border-b border-zinc-900 pb-12">
-            <h2 className="text-7xl font-black uppercase tracking-tighter italic leading-none">HEIST <br/><span className="text-red-600 text-6xl md:text-7xl">ARCHIVES</span></h2>
-            <p className="text-zinc-700 max-w-[250px] text-right font-mono text-[9px] tracking-[0.3em] uppercase leading-relaxed italic">Synchronized with Mainframe DB.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {articles.length > 0 ? articles.map((art: any, index: number) => (
-              <div key={art.id || index} className="group relative p-12 bg-zinc-950 border border-zinc-900 rounded-[3rem] hover:border-red-600 transition-all duration-500 overflow-hidden min-h-[350px] flex flex-col justify-between">
-                {/* Decorative ID background */}
-                <div className="absolute -right-6 -top-10 text-[12rem] font-black text-white/[0.02] italic pointer-events-none group-hover:text-red-600/[0.05] transition-colors">
-                  {index + 1}
-                </div>
-                
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-8">
-                    <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse shadow-[0_0_10px_#dc2626]"></div>
-                    <p className="text-red-600 font-mono text-sm uppercase tracking-[0.6em] font-bold">
-                      // {art.order_id || "BND-UNKNWN"}
-                    </p>
-                  </div>
-                  <h3 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none group-hover:text-red-600 transition-colors">
-                    {art.project_name}
-                  </h3>
-                </div>
-
-                <div className="relative z-10 mt-12">
-                   <div className="flex justify-between items-center mb-4">
-                      <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">Operation Progress</span>
-                      <span className="text-xl font-black italic">{art.progress}%</span>
-                   </div>
-                   <div className="w-full h-1 bg-zinc-900 rounded-full overflow-hidden">
-                      <div className="h-full bg-red-600 transition-all duration-1000 group-hover:shadow-[0_0_15px_#dc2626]" style={{width: `${art.progress}%`}}></div>
-                   </div>
-                </div>
-              </div>
-            )) : (
-              [1, 2].map((i) => (
-                <div key={i} className="min-h-[350px] bg-zinc-950 border border-zinc-900 rounded-[3rem] flex items-center justify-center italic text-zinc-800 font-black">
-                  WAITING FOR UPLINK...
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 6. CONTACT */}
-      <section id="contact" className="py-40 px-6">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-24">
+      <section id="about" className="py-24 px-6">
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div>
-              <h2 className="text-8xl font-black uppercase tracking-tighter mb-12 leading-none italic">NEED A <br/> <span className="text-red-600 text-7xl">HIRE?</span></h2>
-              <p className="text-zinc-500 text-2xl mb-16 leading-relaxed font-medium">Bicarakan misi lu. Team Bandit siap melakukan infiltrasi dan memberikan hasil terbaik secara instan.</p>
-              <div className="space-y-8">
-                <div className="flex items-center gap-6 text-zinc-400 hover:text-red-600 transition cursor-pointer group">
-                  <div className="bg-zinc-900 p-5 rounded-[1.5rem] group-hover:bg-red-600 group-hover:text-white transition-all border border-zinc-800"><Mail /></div>
-                  <span className="text-xl font-black italic uppercase tracking-tighter">ops@teambandit.io</span>
-                </div>
+              <h2 className="text-red-600 font-mono text-[10px] tracking-[0.8em] uppercase mb-8"> // DOKTRIN KAMI</h2>
+              <h3 className="text-5xl md:text-8xl font-black uppercase tracking-tighter italic leading-[0.9] mb-10">BANDIT <span className="text-red-600 text-outline">TEAM</span></h3>
+              <p className="text-zinc-400 text-lg leading-relaxed mb-12">Kami adalah kolektif spesialis akademik. Kami memahami bahwa waktu adalah aset paling berharga lu.</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-6 bg-zinc-900/50 rounded-3xl border border-zinc-800"><ShieldCheck className="text-red-600 mb-2" /><p className="font-bold uppercase text-xs">100% Aman</p></div>
+                <div className="p-6 bg-zinc-900/50 rounded-3xl border border-zinc-800"><Zap className="text-red-600 mb-2" /><p className="font-bold uppercase text-xs">Kilat</p></div>
               </div>
             </div>
-            
-            <div className="bg-red-600 p-16 rounded-[4rem] flex flex-col justify-center text-center relative overflow-hidden group">
-              <Rocket size={100} className="mx-auto text-white mb-10 group-hover:-translate-y-4 transition-transform duration-700" />
-              <h3 className="text-5xl font-black mb-6 uppercase italic tracking-tighter leading-none">JOIN THE <br/> HEIST.</h3>
-              <a href="https://wa.me/6281234567890" target="_blank" className="bg-black text-white py-8 rounded-[2.5rem] font-black text-3xl hover:bg-white hover:text-black transition-all flex items-center justify-center gap-4 uppercase italic">
-                CONTACT WHATSAPP <ArrowRight />
-              </a>
+            <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-[4rem] space-y-8">
+               <h4 className="text-red-600 font-mono text-[10px] font-bold tracking-widest uppercase mb-4">AGENT PROFILES</h4>
+               {[{name: "Ugroseno Dwi P", role: "Fullstack Developer"}, {name: "Rudilou Tiwon", role: "Technical Specialist"}, {name: "Tengku Erlangga", role: "Mobile Expert"}].map((agent, i) => (
+                 <div key={i} className="flex items-center gap-6">
+                   <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center"><User /></div>
+                   <div><p className="text-xl font-black uppercase italic tracking-tighter">{agent.name}</p><p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{agent.role}</p></div>
+                 </div>
+               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="py-24 px-6 border-t border-zinc-900 text-center bg-black">
-          <p className="text-zinc-800 text-[10px] tracking-[2em] uppercase font-mono font-bold">© 2026 TEAM BANDIT // NO LIMITS NO RULES</p>
-      </footer>
+      <section id="paket" className="py-24 px-6 bg-zinc-950/50">
+        <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          <PriceCard title="Infiltrator" price="25K" features={["Tugas Umum", "3-5 Hari", "Standard"]} />
+          <PriceCard title="Commando" price="60K" features={["Coding/Desain", "24-48 Jam", "Prioritas"]} />
+          <PriceCard title="Overlord" price="Custom" features={["Skripsi/Final Project", "Full Bimbingan"]} />
+        </div>
+      </section>
 
+      <section className="py-24 px-6">
+        <div className="container mx-auto max-w-5xl bg-zinc-900/20 border border-zinc-800 p-8 md:p-20 rounded-[4rem]">
+          <h2 className="text-center text-4xl md:text-7xl font-black mb-12 italic uppercase tracking-tighter">RADAR <span className="text-red-600">MISI</span></h2>
+          <div className="flex flex-col md:flex-row gap-4">
+            <input type="text" placeholder="ID (BND-XXXX)" className="flex-1 bg-black border border-zinc-800 p-6 rounded-2xl font-mono text-red-600 outline-none focus:border-red-600" value={orderId} onChange={(e)=>setOrderId(e.target.value.toUpperCase())} />
+            <button onClick={handleTrack} className="bg-red-600 px-10 py-6 rounded-2xl font-black italic flex items-center justify-center gap-3">
+              {loading ? <Loader2 className="animate-spin" /> : <Target />} SCAN
+            </button>
+          </div>
+          {trackData && (
+            <div className="mt-12 p-8 bg-black/50 border border-red-600/20 rounded-[2.5rem] animate-in fade-in zoom-in duration-500">
+              <div className="flex justify-between items-end mb-4">
+                <h4 className="text-2xl font-black italic uppercase">{trackData.project_name}</h4>
+                <span className="text-5xl font-black text-red-600 italic leading-none">{trackData.progress}%</span>
+              </div>
+              <div className="w-full bg-zinc-900 h-3 rounded-full overflow-hidden border border-zinc-800">
+                <div className="bg-red-600 h-full transition-all duration-1000" style={{width: `${trackData.progress}%`}}></div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section id="order" className="py-24 px-6">
+        <div className="container mx-auto max-w-3xl">
+          <h2 className="text-center text-5xl md:text-8xl font-black mb-16 italic uppercase tracking-tighter leading-none">LUNCURKAN <span className="text-red-600">MISI</span></h2>
+          <form className="space-y-4" onSubmit={handleDeploy}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input required placeholder="NAMA KODE" className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl outline-none focus:border-red-600" onChange={(e) => setFormData({...formData, name: e.target.value})} />
+              <input required placeholder="KONTAK" className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl outline-none focus:border-red-600" onChange={(e) => setFormData({...formData, contact: e.target.value})} />
+            </div>
+            <select className="w-full bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl outline-none focus:border-red-600 text-zinc-500" onChange={(e) => setFormData({...formData, package: e.target.value})}>
+              <option>PILIH PAKET MISI</option>
+              <option value="INFILTRATOR">INFILTRATOR (TUGAS UMUM)</option>
+              <option value="COMMANDO">COMMANDO (CODING / DESAIN)</option>
+              <option value="OVERLORD">OVERLORD (SKRIPSI / FINAL)</option>
+            </select>
+            <textarea required placeholder="DETAIL MISI" className="w-full bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl h-40 outline-none focus:border-red-600 resize-none" onChange={(e) => setFormData({...formData, details: e.target.value})}></textarea>
+            <button type="submit" className="w-full py-8 bg-red-600 text-white font-black text-2xl rounded-2xl hover:bg-white hover:text-black transition-all flex items-center justify-center gap-4">
+              {loading ? 'MENGIRIM...' : 'DEPLOY AGENT'} <Rocket />
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <footer className="py-20 px-6 border-t border-white/5 text-center bg-black">
+        <div className="flex justify-center gap-10 mb-10 text-zinc-500">
+          <Instagram className="hover:text-red-600 cursor-pointer transition-colors" /> <Twitter className="hover:text-red-600 cursor-pointer transition-colors" /> <Github className="hover:text-red-600 cursor-pointer transition-colors" />
+        </div>
+        <p className="text-zinc-800 text-[10px] tracking-[1em] font-mono font-bold uppercase">© 2026 BANDIT JOKI // NO LIMITS NO RULES</p>
+      </footer>
     </main>
   );
 }

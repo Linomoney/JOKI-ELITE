@@ -20,10 +20,10 @@ export default function Navbar() {
   }, [isOpen]);
 
   const navLinks = [
-    { name: "Home", href: "#", desc: "Back to base" },
-    { name: "About", href: "#about", desc: "The Doctrine" },
-    { name: "Archive", href: "#portfolio", desc: "Heist records" },
-    { name: "Contact", href: "#contact", desc: "Hire the team" },
+    { name: "Home", href: "#home", desc: "Kembali ke Markas" },
+    { name: "Doctrine", href: "#about", desc: "Misi & Visi Kami" },
+    { name: "Plans", href: "#paket", desc: "Pilihan Taktik" },
+    { name: "Order", href: "#order", desc: "Luncurkan Misi" },
   ];
 
   return (
@@ -44,7 +44,7 @@ export default function Navbar() {
             onClick={() => setIsOpen(!isOpen)}
           >
             <span className="text-[10px] font-mono font-bold tracking-[0.5em] uppercase hidden md:block group-hover:text-red-600 transition">
-              {isOpen ? "DISCONNECT" : "SYSTEM MENU"}
+              {isOpen ? "DISCONNECT" : "OPERATIONAL MENU"}
             </span>
             <div className={`p-4 rounded-2xl transition-all duration-500 ${isOpen ? "bg-red-600 rotate-180" : "bg-white/5 border border-white/10 hover:border-red-600/50"}`}>
               {isOpen ? <X size={24} strokeWidth={3} /> : <Menu size={24} strokeWidth={3} />}
@@ -55,16 +55,17 @@ export default function Navbar() {
 
       {/* FULL SCREEN OVERLAY MENU */}
       <div className={`fixed inset-0 z-[105] bg-[#050505] transition-all duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] ${isOpen ? "clip-path-open" : "clip-path-closed"}`}>
-        {/* Background Grid Pattern (Bandit Style) */}
+        {/* Background Grid Pattern */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#ff0000 1px, transparent 1px), linear-gradient(90deg, #ff0000 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
         
-        {/* Large Decorative Text Backround */}
-        <div className="absolute bottom-0 left-0 text-[20vw] font-black text-white/[0.02] leading-none pointer-events-none select-none italic -mb-10 -ml-10">
-          HEIST
+        {/* Decorative Background Text */}
+        <div className="absolute bottom-0 left-0 text-[20vw] font-black text-white/[0.02] leading-none pointer-events-none select-none italic -mb-10 -ml-10 uppercase">
+          Bandit
         </div>
 
         <div className="container mx-auto px-6 h-full flex flex-col justify-center relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Links Section */}
             <div className="flex flex-col gap-6 md:gap-4">
               {navLinks.map((link, index) => (
                 <a 
@@ -87,14 +88,15 @@ export default function Navbar() {
               ))}
             </div>
 
-            <div className="hidden md:flex flex-col justify-end items-end text-right border-l border-zinc-900 pb-10 pr-10">
+            {/* CTA & Social Section */}
+            <div className="hidden lg:flex flex-col justify-end items-end text-right border-l border-zinc-900 pb-10 pr-10">
               <div className="p-10 bg-zinc-950 border border-zinc-900 rounded-[3rem] relative overflow-hidden group/box">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover/box:rotate-12 transition-transform">
                   <Skull size={80} />
                 </div>
-                <p className="text-zinc-500 max-w-xs mb-8 relative z-10 italic">Ready to execute? Join the ranks of satisfied clients who have witnessed the Bandit precision.</p>
-                <a href="https://wa.me/6281234567890" className="flex items-center gap-4 text-3xl font-black text-white hover:text-red-600 transition group/btn relative z-10 italic uppercase">
-                  START HEIST <ArrowRight size={32} className="group-hover/btn:translate-x-2 transition-transform" />
+                <p className="text-zinc-500 max-w-xs mb-8 relative z-10 italic">Siap untuk eksekusi? Bergabunglah dengan barisan Agent yang telah merasakan presisi Bandit.</p>
+                <a href="https://wa.me/6285710821547" className="flex items-center gap-4 text-3xl font-black text-white hover:text-red-600 transition group/btn relative z-10 italic uppercase">
+                  START MISSION <ArrowRight size={32} className="group-hover/btn:translate-x-2 transition-transform" />
                 </a>
                 
                 <div className="mt-16 space-y-4 relative z-10">

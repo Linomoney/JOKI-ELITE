@@ -4,31 +4,28 @@ import gsap from 'gsap';
 
 export default function HeroSequence() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLHeadingElement>(null);
-  const subTextRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline();
-
-      tl.fromTo(textRef.current, 
-        { y: 100, opacity: 0, skewY: 7 }, 
-        { y: 0, opacity: 1, skewY: 0, duration: 1.5, ease: "power4.out" }
-      )
-      .fromTo(subTextRef.current,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 1 },
-        "-=0.8"
-      );
-
-      // Floating dioptimasi dengan force3D
+      // Animasi Floating yang sangat santai (Slow Motion)
       gsap.to(containerRef.current, {
-        y: -15, // dikurangi sedikit agar tidak terlalu jauh
-        duration: 3,
+        y: -20,
+        duration: 5, // Diperlama biar chill
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
         force3D: true 
+      });
+
+      // Animasi Pulse pada Glow merah agar terasa "hidup" tapi halus
+      gsap.to(glowRef.current, {
+        scale: 1.2,
+        opacity: 0.15,
+        duration: 4,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut"
       });
     });
 
@@ -36,26 +33,41 @@ export default function HeroSequence() {
   }, []);
 
   return (
-    <div className="relative h-screen w-full flex items-center justify-center bg-[#050505] overflow-hidden">
-      {/* Background dioptimasi agar tidak di-repaint terus */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] [backface-visibility:hidden]"></div>
+    <div className="relative h-full w-full flex items-center justify-center bg-[#050505] overflow-hidden">
+      {/* 1. Grain/Noise Overlay - Ringan & Statis */}
+      <div className="absolute inset-0 z-0 opacity-[0.15] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-repeat"></div>
       
-      {/* Red Glow dengan will-change */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-600/10 blur-[100px] rounded-full pointer-events-none will-change-[filter]"></div>
+      {/* 2. Red Glow - Sekarang dipisah biar bisa dipulse */}
+      <div 
+        ref={glowRef}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-red-600/10 blur-[80px] md:blur-[120px] rounded-full pointer-events-none will-change-transform"
+      ></div>
 
-      <div ref={containerRef} className="relative z-10 flex flex-col items-center will-change-transform">
-        <div className="overflow-hidden py-2">
-          <h1 
-            ref={textRef}
-            className="text-[18vw] md:text-[15vw] font-[1000] text-white leading-none tracking-tighter italic uppercase select-none will-change-transform"
-            style={{ fontFamily: 'var(--font-sans)' }}
-          >
-            BANDIT JOKI<span className="text-red-600">.</span>
-          </h1>
-        </div>
-
-        {/* ... sisa konten sama ... */}
+      {/* 3. Decorative Background Text (Watermark Look) */}
+      <div 
+        ref={containerRef} 
+        className="relative z-0 flex flex-col items-center select-none will-change-transform"
+      >
+        <h2 className="text-[25vw] font-[1000] text-white/[0.02] leading-none tracking-tighter italic uppercase whitespace-nowrap">
+          BANDIT BANDIT BANDIT
+        </h2>
+        <h2 className="text-[25vw] font-[1000] text-red-600/[0.02] leading-none tracking-tighter italic uppercase whitespace-nowrap -mt-10 md:-mt-20">
+          ELITE ELITE ELITE
+        </h2>
       </div>
+
+      {/* 4. Scanner Line Effect (Animasi santai tambahan) */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-600/[0.03] to-transparent h-20 w-full top-[-10%] animate-scan pointer-events-none"></div>
+
+      <style jsx>{`
+        @keyframes scan {
+          0% { top: -10%; }
+          100% { top: 110%; }
+        }
+        .animate-scan {
+          animation: scan 8s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }
